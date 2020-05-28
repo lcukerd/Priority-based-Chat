@@ -1,15 +1,20 @@
 const app = require('http').createServer(handler)
 const io = require('socket.io')(app);
 const fs = require('fs');
-const crypto = require('crypto')
+const crypto = require('crypto');
+const PriorityQueue = require('./queue.js');
 const port = process.env.PORT || 5000;
 
 app.listen(port);
 
 let mapKey = {};
 
-let msgqueue = [];
-let cmdqueue = [];
+let msgqueue = new PriorityQueue();
+let cmdqueue = new PriorityQueue();
+
+function handler(req, res) {
+    res.end('Server running!')
+}
 
 const decrypt = (data, key) => {
     const buffer = Buffer.from(data, 'base64')
@@ -20,10 +25,6 @@ const decrypt = (data, key) => {
         buffer,
     )
     return decrypted.toString('utf8')
-}
-
-function handler(req, res) {
-    res.end('Server running!')
 }
 
 const generateKeys = () => {
@@ -45,9 +46,9 @@ const generateKeys = () => {
 
 io.on('connection', socket => {
     console.log('Got a new connection');
-
-    io.emit('this', { will: 'be recieved by everyone' });
-
+    // Create a unique for every new connection.
+    // Share public Key with client 
+    // and keep the private key in server mapped to the socket's ID
     socket.on('register', ack => {
         console.log(`Registering Client ${socket.id}`);
         const key = generateKeys();
@@ -56,17 +57,18 @@ io.on('connection', socket => {
         console.log('Registered')
     });
 
+    // Decrypt the message using the private key of that socket
+    // Queue the message in command queue or msg queue depending on its format
     socket.on('chat', (msg, ack) => {
         const key = mapKey[socket.id];
         const message = decrypt(msg, key);
 
         if (message.charAt(0) === '$') {
-            cmdqueue.push(message.replace('$ '));
+            cmdqueue.enqueue(message.replace('$ '));
             ack(message, 'Command');
         } else {
-            msgqueue.push(message);
+            msgqueue.enqueue(message);
             ack(message, 'Message');
         }
-
     });
 })

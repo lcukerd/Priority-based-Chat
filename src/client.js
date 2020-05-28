@@ -13,10 +13,12 @@ const encrypt = (data, key) => {
     return encrypted.toString('base64')
 }
 
+// Recieve acknowledgement from server with the detected type of msg
 const msgAck = (msg, type) => {
     console.log(`Message: ${msg} was detected of Type: ${type}`);
 }
 
+// Use the stored public key to encrypt messages before sending
 const startMessaging = async () => {
     let counter = 0;
     let data = fs.readFileSync(path.join(__dirname, '../commands.txt')).toString().split('\n');
@@ -30,10 +32,12 @@ const startMessaging = async () => {
     }
 }
 
+// Store the public key
 const receivedKey = key => {
     publicKey = key;
     console.log(`Received public key in ${socket.id}`);
     startMessaging();
 }
 
+// Register this client with server and grab the public key
 socket.emit('register', receivedKey);
