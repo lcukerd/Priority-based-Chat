@@ -1,0 +1,15 @@
+Hello
+Hi
+$ echo 'Hi'
+$ echo 'Hello'
+What's up?
+Doing something?
+Please respond...
+Say something...
+$ cd src
+$ cd ..
+$ ls
+$ mkdir 'Testing'
+$ top
+$ whatis rmdir
+Looks good

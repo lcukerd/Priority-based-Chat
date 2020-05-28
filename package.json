@@ -9,7 +9,6 @@
   "author": "Harshit Kumar",
   "license": "ISC",
   "dependencies": {
-    "node-rsa": "^1.0.8",
     "socket.io": "^2.3.0"
   }
 }
