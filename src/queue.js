@@ -1,6 +1,9 @@
+const { exec } = require("child_process");
+
 class PriorityQueue {
     constructor() {
-        this.items = []
+        this.items = [];
+        this.consuming = false;
     }
 
     enqueue(ele, priority) {
@@ -17,18 +20,41 @@ class PriorityQueue {
         if (!contain) {
             this.items.push(ele);
         }
+        // Only start the consuming function when not already running
+        if (!this.consuming) {
+            this.consuming = true;
+            this.consume();
+        }
     }
 
     dequeue() {
-        if (this.isEmpty())
-            return undefined;
-        const item = this.items[0];
-        this.items.shift();
-        return item;
+        return this.items.shift();
     }
 
-    isEmpty() {
-        return this.items.length === 0;
+    // Consume messages in this queue
+    async consume() {
+        let item = this.dequeue();
+        while (item != undefined) {
+            console.log(`Working on P${item.priority} msg`)
+            if (item.type === 'cmd') {
+                let cmdItem = item;
+                exec(cmdItem.message.replace('$ ', ''), (error, stdout, stderr) => {
+                    let output;
+
+                    if (error) output = error.message;
+                    if (stderr) output = stderr
+                    if (!output) output = stdout;
+
+                    console.log(output)
+                    cmdItem.ack(cmdItem.message, cmdItem.priority, output);
+                });
+            } else if (item.type === 'msg') {
+                console.log(item.message)
+                item.ack(item.message, item.priority, item.message);
+            }
+            item = this.dequeue();
+        }
+        this.consuming = false;
     }
 }
 

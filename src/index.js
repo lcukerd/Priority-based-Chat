@@ -9,8 +9,7 @@ app.listen(port);
 
 let mapKey = {};
 
-let msgqueue = new PriorityQueue();
-let cmdqueue = new PriorityQueue();
+let queue = new PriorityQueue();
 
 function handler(req, res) {
     res.end('Server running!')
@@ -61,14 +60,16 @@ io.on('connection', socket => {
     // Queue the message in command queue or msg queue depending on its format
     socket.on('chat', (msg, ack) => {
         const key = mapKey[socket.id];
-        const message = decrypt(msg, key);
-
-        if (message.charAt(0) === '$') {
-            cmdqueue.enqueue(message.replace('$ '));
-            ack(message, 'Command');
-        } else {
-            msgqueue.enqueue(message);
-            ack(message, 'Message');
+        const message = decrypt(msg.message, key);
+        let item = {
+            message,
+            priority: msg.priority,
+            ack
         }
+
+        if (message.charAt(0) === '$') item['type'] = 'cmd';
+        else item['type'] = 'msg';
+
+        queue.enqueue(item);
     });
 })

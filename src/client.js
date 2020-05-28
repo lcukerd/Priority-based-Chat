@@ -14,8 +14,8 @@ const encrypt = (data, key) => {
 }
 
 // Recieve acknowledgement from server with the detected type of msg
-const msgAck = (msg, type) => {
-    console.log(`Message: ${msg} was detected of Type: ${type}`);
+const msgAck = (msg, priority, result) => {
+    console.log(`Message: ${msg} Priority: ${priority} Output: ${result}`);
 }
 
 // Use the stored public key to encrypt messages before sending
@@ -24,7 +24,10 @@ const startMessaging = async () => {
     let data = fs.readFileSync(path.join(__dirname, '../commands.txt')).toString().split('\n');
     while (true) {
         await new Promise((resolve, _reject) => setTimeout(() => resolve('done'), 100));
-        const msg = encrypt(data[counter++], publicKey);
+        let msg = {};
+        msg.message = encrypt(data[counter++], publicKey);
+        msg.priority = Math.floor(Math.random() * 10);
+
         socket.emit('chat', msg, msgAck);
         if (counter === data.length) {
             counter = 0;
