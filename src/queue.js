@@ -33,9 +33,11 @@ class PriorityQueue {
 
     // Consume messages in this queue
     async consume() {
+        // Uncomment below delay timeout to verify that priority queue is working correctly
+        // await new Promise((resolve, _reject) => setTimeout(() => resolve('done'), 2000));
         let item = this.dequeue();
         while (item != undefined) {
-            console.log(`Working on P${item.priority} msg`)
+            console.log(`Working on P${item.priority} msg of ${item.sender}. Message remaining in queue: ${this.items.length}`)
             if (item.type === 'cmd') {
                 let cmdItem = item;
                 exec(cmdItem.message.replace('$ ', ''), (error, stdout, stderr) => {

@@ -64,7 +64,8 @@ io.on('connection', socket => {
         let item = {
             message,
             priority: msg.priority,
-            ack
+            ack,
+            sender: socket.id
         }
 
         if (message.charAt(0) === '$') item['type'] = 'cmd';

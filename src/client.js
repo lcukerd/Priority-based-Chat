@@ -23,6 +23,7 @@ const startMessaging = async () => {
     let counter = 0;
     let data = fs.readFileSync(path.join(__dirname, '../commands.txt')).toString().split('\n');
     while (true) {
+        // Timeout to ensure that client don't hang CPU
         await new Promise((resolve, _reject) => setTimeout(() => resolve('done'), 100));
         let msg = {};
         msg.message = encrypt(data[counter++], publicKey);
